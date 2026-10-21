@@ -1,0 +1,540 @@
+{
+  "info": {
+    "name": "8vm51-15-mandrikov Notes API",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "variable": [
+    {
+      "key": "baseUrl",
+      "value": "http://localhost:8000"
+    },
+    {
+      "key": "noteId",
+      "value": ""
+    }
+  ],
+  "item": [
+    {
+      "name": "01 Health",
+      "request": {
+        "method": "GET",
+        "header": [],
+        "url": {
+          "raw": "{{baseUrl}}/health",
+          "host": [
+            "{{baseUrl}}"
+          ],
+          "path": [
+            "health"
+          ]
+        }
+      },
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test(\"HTTP 200\", () => pm.response.to.have.status(200));",
+              "pm.test(\"Database and identity\", () => { const j=pm.response.json(); pm.expect(j.status).to.eql(\"ok\"); pm.expect(j.student).to.eql(\"8vm51-15-mandrikov\"); });"
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "name": "02 Create",
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "url": {
+          "raw": "{{baseUrl}}/notes",
+          "host": [
+            "{{baseUrl}}"
+          ],
+          "path": [
+            "notes"
+          ]
+        },
+        "body": {
+          "mode": "raw",
+          "raw": "{\"text\": \"Проверка ЛР 12\"}",
+          "options": {
+            "raw": {
+              "language": "json"
+            }
+          }
+        }
+      },
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test(\"HTTP 201\", () => pm.response.to.have.status(201));",
+              "pm.test(\"Created note\", () => { const j=pm.response.json(); pm.expect(j.id).to.be.a(\"number\"); pm.expect(j.text).to.eql(\"Проверка ЛР 12\"); pm.collectionVariables.set(\"noteId\",j.id); });"
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "name": "03 List",
+      "request": {
+        "method": "GET",
+        "header": [],
+        "url": {
+          "raw": "{{baseUrl}}/notes",
+          "host": [
+            "{{baseUrl}}"
+          ],
+          "path": [
+            "notes"
+          ]
+        }
+      },
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test(\"HTTP 200\", () => pm.response.to.have.status(200));",
+              "pm.test(\"Created note is listed\", () => pm.expect(pm.response.json().some(x => x.id === Number(pm.collectionVariables.get(\"noteId\")))).to.eql(true));"
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "name": "04 Get",
+      "request": {
+        "method": "GET",
+        "header": [],
+        "url": {
+          "raw": "{{baseUrl}}/notes/{{noteId}}",
+          "host": [
+            "{{baseUrl}}"
+          ],
+          "path": [
+            "notes",
+            "{{noteId}}"
+          ]
+        }
+      },
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test(\"HTTP 200\", () => pm.response.to.have.status(200));",
+              "pm.test(\"Original text\", () => pm.expect(pm.response.json().text).to.eql(\"Проверка ЛР 12\"));"
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "name": "05 Update",
+      "request": {
+        "method": "PUT",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "url": {
+          "raw": "{{baseUrl}}/notes/{{noteId}}",
+          "host": [
+            "{{baseUrl}}"
+          ],
+          "path": [
+            "notes",
+            "{{noteId}}"
+          ]
+        },
+        "body": {
+          "mode": "raw",
+          "raw": "{\"text\": \"Изменённая заметка\"}",
+          "options": {
+            "raw": {
+              "language": "json"
+            }
+          }
+        }
+      },
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test(\"HTTP 200\", () => pm.response.to.have.status(200));",
+              "pm.test(\"Updated text\", () => pm.expect(pm.response.json().text).to.eql(\"Изменённая заметка\"));"
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "name": "06 Malformed JSON",
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "url": {
+          "raw": "{{baseUrl}}/notes",
+          "host": [
+            "{{baseUrl}}"
+          ],
+          "path": [
+            "notes"
+          ]
+        },
+        "body": {
+          "mode": "raw",
+          "raw": "{\"text\":",
+          "options": {
+            "raw": {
+              "language": "json"
+            }
+          }
+        }
+      },
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test(\"HTTP 400\", () => pm.response.to.have.status(400));",
+              "pm.test(\"Error message\", () => pm.expect(pm.response.json().error).to.be.a(\"string\").and.not.empty);"
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "name": "07 Wrong type",
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "url": {
+          "raw": "{{baseUrl}}/notes",
+          "host": [
+            "{{baseUrl}}"
+          ],
+          "path": [
+            "notes"
+          ]
+        },
+        "body": {
+          "mode": "raw",
+          "raw": "{\"text\": 42}",
+          "options": {
+            "raw": {
+              "language": "json"
+            }
+          }
+        }
+      },
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test(\"HTTP 400\", () => pm.response.to.have.status(400));",
+              "pm.test(\"Error message\", () => pm.expect(pm.response.json().error).to.be.a(\"string\").and.not.empty);"
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "name": "08 Empty text",
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "url": {
+          "raw": "{{baseUrl}}/notes",
+          "host": [
+            "{{baseUrl}}"
+          ],
+          "path": [
+            "notes"
+          ]
+        },
+        "body": {
+          "mode": "raw",
+          "raw": "{\"text\": \"  \"}",
+          "options": {
+            "raw": {
+              "language": "json"
+            }
+          }
+        }
+      },
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test(\"HTTP 400\", () => pm.response.to.have.status(400));",
+              "pm.test(\"Error message\", () => pm.expect(pm.response.json().error).to.be.a(\"string\").and.not.empty);"
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "name": "09 Long text",
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "url": {
+          "raw": "{{baseUrl}}/notes",
+          "host": [
+            "{{baseUrl}}"
+          ],
+          "path": [
+            "notes"
+          ]
+        },
+        "body": {
+          "mode": "raw",
+          "raw": "{\"text\": \"xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx\"}",
+          "options": {
+            "raw": {
+              "language": "json"
+            }
+          }
+        }
+      },
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test(\"HTTP 400\", () => pm.response.to.have.status(400));",
+              "pm.test(\"Error message\", () => pm.expect(pm.response.json().error).to.be.a(\"string\").and.not.empty);"
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "name": "10 Unknown field",
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "url": {
+          "raw": "{{baseUrl}}/notes",
+          "host": [
+            "{{baseUrl}}"
+          ],
+          "path": [
+            "notes"
+          ]
+        },
+        "body": {
+          "mode": "raw",
+          "raw": "{\"text\": \"note\", \"other\": 1}",
+          "options": {
+            "raw": {
+              "language": "json"
+            }
+          }
+        }
+      },
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test(\"HTTP 400\", () => pm.response.to.have.status(400));",
+              "pm.test(\"Error message\", () => pm.expect(pm.response.json().error).to.be.a(\"string\").and.not.empty);"
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "name": "11 Missing note",
+      "request": {
+        "method": "GET",
+        "header": [],
+        "url": {
+          "raw": "{{baseUrl}}/notes/2147483647",
+          "host": [
+            "{{baseUrl}}"
+          ],
+          "path": [
+            "notes",
+            "2147483647"
+          ]
+        }
+      },
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test(\"HTTP 404\", () => pm.response.to.have.status(404));",
+              "pm.test(\"Error message\", () => pm.expect(pm.response.json().error).to.be.a(\"string\").and.not.empty);"
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "name": "12 Delete",
+      "request": {
+        "method": "DELETE",
+        "header": [],
+        "url": {
+          "raw": "{{baseUrl}}/notes/{{noteId}}",
+          "host": [
+            "{{baseUrl}}"
+          ],
+          "path": [
+            "notes",
+            "{{noteId}}"
+          ]
+        }
+      },
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test(\"HTTP 204\", () => pm.response.to.have.status(204));"
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "name": "13 Deleted note",
+      "request": {
+        "method": "GET",
+        "header": [],
+        "url": {
+          "raw": "{{baseUrl}}/notes/{{noteId}}",
+          "host": [
+            "{{baseUrl}}"
+          ],
+          "path": [
+            "notes",
+            "{{noteId}}"
+          ]
+        }
+      },
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test(\"HTTP 404\", () => pm.response.to.have.status(404));",
+              "pm.test(\"Error message\", () => pm.expect(pm.response.json().error).to.be.a(\"string\").and.not.empty);"
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "name": "14 Still healthy",
+      "request": {
+        "method": "GET",
+        "header": [],
+        "url": {
+          "raw": "{{baseUrl}}/health",
+          "host": [
+            "{{baseUrl}}"
+          ],
+          "path": [
+            "health"
+          ]
+        }
+      },
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test(\"HTTP 200\", () => pm.response.to.have.status(200));",
+              "pm.test(\"Service survives invalid input\", () => pm.expect(pm.response.json().status).to.eql(\"ok\"));"
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "name": "15 Metrics",
+      "request": {
+        "method": "GET",
+        "header": [],
+        "url": {
+          "raw": "{{baseUrl}}/metrics",
+          "host": [
+            "{{baseUrl}}"
+          ],
+          "path": [
+            "metrics"
+          ]
+        }
+      },
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test(\"HTTP 200\", () => pm.response.to.have.status(200));",
+              "pm.test(\"Metrics are collected\", () => pm.expect(pm.response.text()).to.include(\"notes_http_requests_total\"));"
+            ]
+          }
+        }
+      ]
+    }
+  ]
+}
